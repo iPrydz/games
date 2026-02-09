@@ -3,98 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing Defense - Roguelike</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Games - amoniz.dev</title>
+    <meta name="description" content="Colección de minijuegos retro - amoniz.dev">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #d4d4aa;
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 56px;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+            filter: grayscale(100%);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            margin-bottom: 60px;
+            opacity: 0.5;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .game-card {
+            background: #e8e8c0;
+            border: 3px solid #1a1a1a;
+            padding: 35px 25px;
+            text-decoration: none;
+            color: #1a1a1a;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: block;
+        }
+
+        .game-card:hover {
+            background: #1a1a1a;
+            color: #e8e8c0;
+            transform: translateY(-5px);
+        }
+
+        .game-card.coming-soon {
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        .game-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+            filter: grayscale(100%);
+        }
+
+        .game-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .game-description {
+            font-size: 13px;
+            opacity: 0.65;
+            line-height: 1.7;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 11px;
+            opacity: 0.4;
+            letter-spacing: 1px;
+        }
+
+        .footer a {
+            color: #1a1a1a;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(26, 26, 26, 0.3);
+            transition: opacity 0.2s;
+        }
+
+        .footer a:hover {
+            opacity: 0.6;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 42px;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .game-card {
+                padding: 25px 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="game-container">
-        <!-- HUD Superior -->
-        <div class="hud-top">
-            <div class="stat-group">
-                <div class="stat-label">Nivel</div>
-                <div class="stat-value" id="level">1</div>
-            </div>
-            <div class="stat-group">
-                <div class="stat-label">Puntos</div>
-                <div class="stat-value" id="score">0</div>
-            </div>
-            <div class="stat-group">
-                <div class="stat-label">Combo</div>
-                <div class="stat-value combo" id="combo">0x</div>
-            </div>
-        </div>
+    <div class="container">
+        <h1>🎮 GAMES</h1>
+        <p class="subtitle">Minijuegos Retro</p>
 
-        <!-- Barra de XP -->
-        <div class="xp-bar-container">
-            <div class="xp-bar" id="xpBar"></div>
-        </div>
-
-        <!-- Canvas del juego -->
-        <canvas id="gameCanvas"></canvas>
-
-        <!-- Tutorial overlay -->
-        <div class="tutorial-overlay">
-            <div class="tutorial-line">
-                <span class="tutorial-text">Type to Eliminate</span>
-            </div>
-            <div class="tutorial-line">
-                <span class="tutorial-key">SPACE</span>
-                <span class="tutorial-text">Reset Word</span>
-            </div>
-            <div class="tutorial-line">
-                <span class="tutorial-text">Level Up:</span>
-                <span class="tutorial-key">1</span>
-                <span class="tutorial-key">2</span>
-                <span class="tutorial-key">3</span>
-            </div>
-        </div>
-
-        <!-- HUD Inferior -->
-        <div class="hud-bottom">
-            <div class="lives-container">
-                <div class="lives-label">❤️</div>
-                <div class="lives-bars" id="livesBars"></div>
-            </div>
-            <div class="typing-display" id="typingDisplay"></div>
-            <div class="upgrades-mini" id="upgradesMini"></div>
-        </div>
-
-        <!-- Menú de Mejoras (Level Up) -->
-        <div id="upgradeMenu" class="upgrade-menu hidden">
-            <div class="upgrade-menu-content">
-                <h2>¡NIVEL <span id="levelUpNumber">2</span>!</h2>
-                <p class="upgrade-subtitle">Elige una mejora</p>
-
-                <!-- Mejoras actuales -->
-                <div class="current-upgrades" id="currentUpgrades"></div>
-
-                <div class="upgrade-options" id="upgradeOptions"></div>
-            </div>
-        </div>
-
-        <!-- Game Over -->
-        <div id="gameOver" class="game-over hidden">
-            <div class="game-over-content">
-                <h2>GAME OVER</h2>
-                <div class="final-stats">
-                    <div class="final-stat">
-                        <div class="final-stat-label">Puntuación Final</div>
-                        <div class="final-stat-value" id="finalScore">0</div>
-                    </div>
-                    <div class="final-stat">
-                        <div class="final-stat-label">Nivel Alcanzado</div>
-                        <div class="final-stat-value" id="finalLevel">1</div>
-                    </div>
-                    <div class="final-stat">
-                        <div class="final-stat-label">Palabras Destruidas</div>
-                        <div class="final-stat-value" id="wordsDestroyed">0</div>
-                    </div>
+        <div class="games-grid">
+            <!-- Typing Defense -->
+            <a href="/typing/" class="game-card">
+                <div class="game-icon">⌨️</div>
+                <div class="game-title">Typing Defense</div>
+                <div class="game-description">
+                    Roguelike typing game con estética Game & Watch. Defiende tu torreta escribiendo palabras que atacan desde todos los ángulos.
                 </div>
-                <button id="restartBtn" class="restart-btn">REINICIAR</button>
+            </a>
+
+            <!-- Placeholder para futuros juegos -->
+            <div class="game-card coming-soon">
+                <div class="game-icon">🎯</div>
+                <div class="game-title">Próximamente</div>
+                <div class="game-description">
+                    Más juegos en desarrollo...
+                </div>
             </div>
+
+            <div class="game-card coming-soon">
+                <div class="game-icon">🕹️</div>
+                <div class="game-title">Próximamente</div>
+                <div class="game-description">
+                    Más juegos en desarrollo...
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <a href="https://amoniz.dev">← amoniz.dev</a>
         </div>
     </div>
-
-    <script src="game.js"></script>
 </body>
 </html>
