@@ -1,27 +1,27 @@
-# 🎮 Games - amoniz.dev
+# ⌨️ Typing Defense
 
-Colección de minijuegos retro con estética **Game & Watch** de los años 80.
+Juego roguelike donde defiendes una torreta central escribiendo palabras que atacan desde todos los ángulos.
 
-**🌐 Live:** [games.amoniz.dev](https://games.amoniz.dev)
+**🌐 Live:** [amoniz.dev/games/typing](https://amoniz.dev/games/typing)
 
 ---
 
 ## 📁 Estructura
 
 ```
-games/
-├── index.html              # Landing page con lista de juegos
-└── typing/                 # Typing Defense - Roguelike typing game
-    ├── index.html
-    ├── game.js
-    └── style.css
+typing-defense/
+├── index.html              # Página del juego
+├── game.js                 # Lógica del juego
+├── style.css               # Estilos Game & Watch
+├── CLAUDE.md               # Memoria del proyecto
+└── TODO.md                 # Tareas pendientes
 ```
 
 ---
 
-## 🕹️ Juegos Disponibles
+## 🎮 Sobre el Juego
 
-### ⌨️ [Typing Defense](https://games.amoniz.dev/typing)
+### ⌨️ Typing Defense
 
 Juego roguelike donde defiendes una torreta central escribiendo palabras que atacan desde todos los ángulos.
 
@@ -50,8 +50,8 @@ Juego roguelike donde defiendes una torreta central escribiendo palabras que ata
 
 ```bash
 # Clonar repositorio
-git clone https://github.com/iPrydz/games.git
-cd games
+git clone https://github.com/iPrydz/typing-defense.git
+cd typing-defense
 
 # Abrir con Live Server (recomendado)
 npm start
@@ -75,7 +75,7 @@ npm run minify         # Minificar JS para producción
 
 ## 🎨 Estilo Visual
 
-Todos los juegos siguen la estética **Game & Watch** de Nintendo (1980s):
+El juego sigue la estética **Game & Watch** de Nintendo (1980s):
 - LCD monocromático negro sobre amarillo (`#1a1a1a` sobre `#e8e8c0`)
 - Diseño minimalista y plano (sin gradientes ni sombras modernas)
 - Tipografía monoespaciada (`Courier New`)
@@ -83,58 +83,27 @@ Todos los juegos siguen la estética **Game & Watch** de Nintendo (1980s):
 
 ---
 
-## 📦 Añadir Nuevo Juego
-
-Para añadir un nuevo juego a la colección:
-
-1. **Crear carpeta:** `mkdir nuevo-juego/`
-2. **Añadir archivos:** `index.html`, `game.js`, `style.css`
-3. **Actualizar landing:** Añadir card en `/index.html`
-4. **Mantener estética:** Seguir guía de estilo Game & Watch
-
-```html
-<!-- Ejemplo de card en index.html -->
-<a href="/nuevo-juego/" class="game-card">
-    <div class="game-icon">🎯</div>
-    <div class="game-title">Nuevo Juego</div>
-    <div class="game-description">
-        Descripción breve del juego...
-    </div>
-</a>
-```
-
----
-
 ## 🚀 Deployment
 
-El proyecto está deployado en **Vercel** con configuración automática:
+El juego está integrado como **Git Submodule** en el portfolio principal:
 
-**Configuración (`vercel.json` no necesario):**
-```json
-{
-  "buildCommand": null,
-  "outputDirectory": "./",
-  "framework": null
-}
-```
+**Estructura:**
+- Repositorio: `github.com/iPrydz/games` (este repo)
+- Integrado en: `mi-portfolio/public/games/typing/` (como submodule)
+- Dominio: `amoniz.dev/games/typing`
 
-**Dominio:**
-- Producción: `games.amoniz.dev`
-- Preview: `games-git-main-iprydz.vercel.app`
-
-**Deploy automático:**
-- Push a `main` → Deploy automático en Vercel
-- Pull Request → Preview deployment
+**Deployment:**
+- Este repo se desarrolla de forma independiente
+- Se integra en mi-portfolio como Git Submodule
+- El portfolio principal se deploya en Vercel → `amoniz.dev`
 
 ---
 
 ## 📝 Documentación
 
-Cada juego tiene su propia documentación en subcarpetas:
-- `/typing/CLAUDE.md` - Memoria del proyecto Typing Defense
-- `/typing/TODO.md` - Tareas pendientes
-
-Para documentación general del proyecto, ver archivos raíz:
+Documentación del proyecto:
+- `CLAUDE.md` - Memoria del proyecto Typing Defense
+- `TODO.md` - Tareas pendientes
 - `CHANGELOG.md` - Historial de versiones
 - `DATABASE_SCHEMA.md` - Esquema para futura integración con BD
 
@@ -161,7 +130,7 @@ MIT License - © 2024 amoniz.dev
 ## 🔗 Links
 
 - **Portfolio:** [amoniz.dev](https://amoniz.dev)
-- **Games:** [games.amoniz.dev](https://games.amoniz.dev)
+- **Games Collection:** [amoniz.dev/games](https://amoniz.dev/games)
 - **GitHub:** [github.com/iPrydz](https://github.com/iPrydz)
 
 ---
