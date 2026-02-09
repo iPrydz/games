@@ -58,15 +58,15 @@ const enemyTypes = {
 // Configuración de tipos de enemigos
 const enemyTypeConfig = {
     [enemyTypes.NORMAL]: {
-        spawnWeight: 70,  // Probabilidad relativa de spawn
+        spawnWeight: 85,  // Probabilidad relativa de spawn
         shapeOptions: [0, 1, 2]  // Círculo, triángulo, cuadrado
     },
     [enemyTypes.SHIELDED]: {
-        spawnWeight: 10,  // Spawn poco frecuente
+        spawnWeight: 5,  // Spawn poco frecuente
         shapeOptions: [0, 1, 2]
     },
     [enemyTypes.SPLITTER]: {
-        spawnWeight: 20,
+        spawnWeight: 10,
         shapeOptions: [3, 4]  // Formas especiales: rombo (3), rectángulo (4)
     }
 };
@@ -1041,30 +1041,6 @@ document.addEventListener('keydown', (e) => {
     }
 
     if (gameState.isGameOver || gameState.isPaused) return;
-
-    // MODO TEST: Invocar enemigos específicos con teclas numéricas
-    if (key >= '5' && key <= '9') {
-        e.preventDefault();
-        const testKey = parseInt(key);
-
-        switch (testKey) {
-            case 5:
-                // Invocar enemigo normal
-                spawnWord(enemyTypes.NORMAL);
-                break;
-            case 7:
-                // Invocar enemigo que se divide
-                spawnWord(enemyTypes.SPLITTER);
-                break;
-            // Reservado para futuros tipos de enemigos
-            case 6:
-            case 8:
-            case 9:
-                console.log(`Tipo de enemigo ${testKey} aún no implementado`);
-                break;
-        }
-        return;
-    }
 
     // Espacio para resetear palabra actual
     if (key === ' ') {
