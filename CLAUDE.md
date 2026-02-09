@@ -4,340 +4,114 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 📋 Project Summary
 
-Roguelike typing game with retro Game & Watch aesthetic (1980s). Player defends a central turret by typing words attacking from all angles. Roguelike-style progression system with upgrades.
+**Games Collection Repository** - Colección de minijuegos retro y experimentales desarrollados por Alejandro Moñiz Mesa.
 
-**Domain:** amoniz.dev
-**Status:** Local development
-**Tech Stack:** HTML5, CSS3, Vanilla JavaScript (no dependencies)
-
----
-
-## 🎨 Decisiones de Diseño
-
-### Estética Visual
-- **Inspiración:** Nintendo Game & Watch (años 80)
-- **Paleta de colores:**
-  - Fondo Canvas: `#e8e8c0` (amarillo LCD)
-  - Fondo General: `#d4d4aa` (beige vintage)
-  - Primario: `#1a1a1a` (negro)
-  - Secundario: `#3a3a3a` (gris oscuro)
-- **Sin gradientes ni sombras modernas** - Solo diseño plano LCD
-- **Fullscreen responsivo** - Se adapta al tamaño de ventana
-
-### Mecánicas de Juego
-- **Sin input visual** - Captura de teclas directa
-- **Tutorial integrado** - Teclas visuales con opacidad 0.2
-- **Sistema de combo** - Multiplicador por encadenar palabras
-- **XP visual** - Barra que se llena de izquierda a derecha sin números
-
-### Controles
-- **A-Z:** Escribir
-- **Backspace:** Borrar letra (mantiene progreso de palabra)
-- **Espacio:** Reset palabra completa
-- **1, 2, 3:** Elegir mejora al subir nivel
-- **F11:** Pantalla completa (recomendado)
+**Live URL:** [games.amoniz.dev](https://games.amoniz.dev)
+**Main Site:** [amoniz.dev](https://amoniz.dev)
+**Repository:** github.com/iPrydz/games
+**Tech Stack:** Vanilla JavaScript, HTML5, CSS3 (sin dependencias)
+**Deployment:** Vercel (auto-deploy desde main)
 
 ---
 
-## 🏗️ Arquitectura Técnica
-
-### Archivos Principales
+## 🏗️ Repository Structure
 
 ```
-typing/
-├── index.html           # Estructura HTML del juego
-├── style.css            # Estilos Game & Watch + fullscreen
-├── game.js              # Lógica del juego y sistema roguelike
-├── README.md            # Documentación para usuarios
-├── CLAUDE.md            # Este archivo (memoria del proyecto)
-├── DATABASE_SCHEMA.md   # Esquema para futura base de datos
-├── TODO.md              # Lista de tareas pendientes
-├── CHANGELOG.md         # Historial de cambios y versiones
-├── package.json         # Configuración npm y scripts útiles
-├── .gitignore           # Archivos ignorados por Git
-└── .vscode/             # Configuración de Visual Studio Code
-    ├── settings.json    # Preferencias del editor
-    └── extensions.json  # Extensiones recomendadas
-```
-
-### Core Configuration (`game.js`)
-
-```javascript
-const config = {
-    turretRadius: 30,
-    baseWordSpeed: 0.3,
-    baseSpawnInterval: 2500,
-    baseMaxLives: 5
-};
-```
-
-### Word List
-~120 English words (themes: nature, fantasy, tech, animals)
-
-### Game State Structure
-
-```javascript
-gameState = {
-    // Core gameplay
-    score, level, xp, xpToNextLevel, lives, maxLives,
-    words: [],          // Array of Word instances
-    particles: [],      // Array of Particle instances
-    projectiles: [],    // Array of Projectile instances
-
-    // Input & combo
-    currentInput: '',
-    combo: 0,
-    wordsDestroyed: 0,
-
-    // Upgrades & power-ups
-    upgrades: {},       // { fireRate: 0, slowWords: 0, ... }
-    shieldActive: 0,
-
-    // Statistics (prepared for future DB integration)
-    stats: {
-        totalScore, highestLevel, totalWordsDestroyed,
-        totalGamesPlayed, upgradesPicked: []
-    }
-}
-```
-
-### Main Classes
-
-- **Word**: Enemy words moving toward turret
-  - `text`, `angle`, `distance`, `speed`, `matched`, `shape`
-  - Updates position radially toward center
-  - Draws with highlighted matched letters
-
-- **Particle**: Visual effects on word destruction
-  - Simple physics with velocity decay
-
-- **Projectile**: Visual projectiles from turret to destroyed word
-  - Travels from center to target position
-
-### Game Loop & Core Mechanics
-
-**Input Handling:**
-- Direct keyboard event listeners (no input field)
-- `currentInput` tracks typed letters
-- Each keypress updates all words' `matched` property
-- Backspace removes last letter, Space resets input
-- Complete matches trigger word destruction
-
-**Word Spawning:**
-- Timer-based with configurable interval (`baseSpawnInterval`)
-- Spawn rate affected by "Fire Rate" upgrade
-- Words start at screen edge, move radially toward center
-
-**Collision Detection:**
-- Words check `distance < turretRadius + 25`
-- Reaching center triggers life loss (or shield absorption)
-- Combo resets on damage
-
-**Upgrade System:**
-- 6 upgrade types defined in `upgradeDefinitions`
-- Each has `effect` function that calculates value based on level
-- Upgrades applied on selection: modify gameState properties
-- Max 3 random options offered per level-up
-
----
-
-## 🎮 Sistema de Mejoras Roguelike
-
-### 6 Tipos de Mejoras
-
-| Mejora | Icono | Descripción | Efecto | Max Nivel |
-|--------|-------|-------------|--------|-----------|
-| Fuego Rápido | ⚡ | Más palabras aparecen | -15% spawn interval | 5 |
-| Campo Lento | 🐌 | Palabras más lentas | -15% velocidad | 5 |
-| Vida Extra | ❤️ | Aumenta vida máxima | +1 vida | 5 |
-| Multiplicador | 💎 | Más puntos | +30% puntos | 5 |
-| Escudo | 🛡️ | Absorbe golpes | +1 escudo | 3 |
-| Crítico | ⭐ | Doble puntos chance | +15% probabilidad | 5 |
-
-### Progresión
-- **XP por palabra:** `longitud * 5`
-- **Puntos por palabra:** `(longitud * 10) * multiplicador * (1 + combo * 0.1)`
-- **XP siguiente nivel:** `nivel actual * 1.5` (redondeado)
-- **Curación automática:** +1 vida al subir nivel
-
----
-
-## 🎯 Características Implementadas
-
-### ✅ Core Gameplay
-- [x] Torreta central con diseño minimalista
-- [x] Palabras atacando desde todos los ángulos
-- [x] 3 tipos de formas geométricas (círculo, triángulo, cuadrado)
-- [x] Sistema de escritura sin input visual
-- [x] Resaltado de letras escritas
-- [x] Detección de palabras completas
-- [x] Sistema de vidas con barras visuales
-- [x] Game Over con estadísticas
-
-### ✅ Sistema Roguelike
-- [x] Experiencia y niveles
-- [x] Barra XP visual sin números
-- [x] Menú de mejoras al subir nivel
-- [x] 6 tipos de mejoras con 3-5 niveles cada una
-- [x] Selección de mejoras con teclado (1, 2, 3)
-- [x] Indicadores de mejoras activas
-- [x] Sistema de combo con timer
-- [x] Críticos visuales
-
-### ✅ UI/UX
-- [x] HUD superior (Nivel, Puntos, Combo)
-- [x] Barra de XP visual
-- [x] HUD inferior (Vidas, Escritura, Mejoras)
-- [x] Tutorial integrado con teclas visuales
-- [x] Fullscreen responsivo
-- [x] Animaciones LCD parpadeantes
-- [x] Efectos de partículas
-
-### ✅ Código
-- [x] Canvas responsivo con resize
-- [x] Sistema de estados del juego
-- [x] Clases para Word, Particle
-- [x] Event listeners optimizados
-- [x] Estructura preparada para BD
-
----
-
-## 🗄️ Preparación para Base de Datos
-
-### Estado Actual
-El juego guarda estadísticas en `gameState.stats`:
-```javascript
-stats: {
-    totalScore: 0,
-    highestLevel: 1,
-    totalWordsDestroyed: 0,
-    totalGamesPlayed: 0,
-    upgradesPicked: []
-}
-```
-
-### Base de Datos Futura
-Ver `DATABASE_SCHEMA.md` para:
-- Esquema completo de usuarios
-- Leaderboards globales
-- Sistema de logros
-- Mejoras permanentes entre partidas
-- Sistema de monedas (oro/gemas)
-- Anti-cheat y validaciones
-
-### Backend Recomendado
-- **API:** REST o GraphQL
-- **BD:** MongoDB (flexible) o PostgreSQL (leaderboards)
-- **Auth:** JWT
-- **Real-time:** WebSockets para leaderboards
-- **Cache:** Redis para estadísticas
-
----
-
-## 🚀 Deployment
-
-### Actual (Local)
-```bash
-# Abrir directamente en navegador
-open index.html
-```
-
-### Futuro (Producción)
-1. **GitHub:** Repositorio público/privado
-2. **Vercel:** Deployment automático desde main
-3. **Cloudflare:** DNS para amoniz.dev
-4. **Backend:** Vercel Serverless o Railway
-
-#### Configuración Vercel
-```json
-{
-  "buildCommand": null,
-  "outputDirectory": "./",
-  "framework": null
-}
+games/
+├── index.html              # Landing page con estilo de amoniz.dev
+├── README.md               # Documentación del repositorio
+├── CLAUDE.md               # Este archivo (memoria del proyecto)
+├── CHANGELOG.md            # Historial de versiones
+├── TODO.md                 # Tareas pendientes
+├── DATABASE_SCHEMA.md      # Esquema para futura BD
+├── package.json            # Scripts y configuración npm
+├── .gitignore              # Archivos ignorados (incluye .claude/)
+├── .vscode/                # Configuración VS Code
+└── typing/                 # ⌨️ Typing Defense (primer juego)
+    ├── index.html          # HTML del juego
+    ├── game.js             # Lógica del juego (31KB)
+    └── style.css           # Estilos Game & Watch
 ```
 
 ---
 
-## 🐛 Problemas Resueltos
+## 🎮 Games in Collection
 
-### Backspace
-**Problema:** Borraba el matched de todas las palabras
-**Solución:** Actualiza solo las palabras que coinciden con el nuevo input
+### 1. Typing Defense (`/typing/`)
 
-### Barra XP
-**Problema:** Texto numérico ocupaba espacio
-**Solución:** Solo barra visual que se llena, sin texto
+**URL:** [games.amoniz.dev/typing](https://games.amoniz.dev/typing)
 
-### Reset de Palabra
-**Problema:** ESC muy incómodo de usar
-**Solución:** Cambiado a ESPACIO (más accesible)
+Roguelike typing game con estética Game & Watch de los años 80. El jugador defiende una torreta central escribiendo palabras que atacan desde todos los ángulos.
 
-### Tutorial
-**Problema:** Tapaba la torreta central
-**Solución:** Reposicionado al 20% superior con opacidad 0.2
+**Features:**
+- Sistema de escritura directo (sin input field visible)
+- 6 tipos de mejoras roguelike
+- Sistema de combo y multiplicadores
+- ~120 palabras en inglés
+- Visualización del texto escribiendo debajo de la torreta
+- Menú de level-up con mejoras actuales visibles
+- Estética LCD monocromática auténtica
 
----
-
-## 📊 Métricas y Balance
-
-### Dificultad Actual
-- **Spawn inicial:** 2500ms entre palabras
-- **Velocidad inicial:** 0.3 unidades/frame
-- **Vidas iniciales:** 5
-- **Radio torreta:** 30px
-
-### Balance Testing
-- Nivel 1-3: Fácil (aprendizaje)
-- Nivel 4-7: Medio (desafiante)
-- Nivel 8+: Difícil (requiere mejoras)
+**Tech Details:**
+- Vanilla JS puro (no dependencies)
+- HTML5 Canvas para rendering
+- Sistema de clases: Word, Particle, Projectile
+- Game loop optimizado con requestAnimationFrame
 
 ---
 
-## 🎯 Roadmap
+## 🎨 Design System
 
-### Fase 1: MVP ✅ (Completado)
-- Core gameplay
-- Sistema roguelike
-- UI completa
+### Landing Page (`/index.html`)
+**Estilo:** Moderno con gradientes, matching amoniz.dev
 
-### Fase 2: Polish (En progreso)
-- [ ] Efectos de sonido retro (beeps)
-- [ ] Animaciones mejoradas
-- [ ] Más palabras
-- [ ] Ajustes de balance
+**Colors:**
+- Background: `linear-gradient(135deg, #1e293b 0%, #0f172a 100%)`
+- Primary gradient: `linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)`
+- Text primary: `#e2e8f0`
+- Text secondary: `#94a3b8`
+- Text muted: `#64748b`
 
-### Fase 3: Backend
-- [ ] Sistema de usuarios
-- [ ] Base de datos
-- [ ] Leaderboards
-- [ ] Logros
+**Typography:**
+- Font: System fonts (-apple-system, BlinkMacSystemFont, Segoe UI, Roboto)
+- H1: 56px, gradient text
+- Body: 15-16px
 
-### Fase 4: Advanced
-- [ ] Mejoras permanentes
-- [ ] Eventos especiales
-- [ ] Enemigos especiales (jefes)
-- [ ] Más tipos de mejoras
-- [ ] Sistema de monedas
+**Layout:**
+- Header: Logo "AM" + Nav (Home, Projects, Games, Contact)
+- Profile section con icono 🎮
+- Games grid: auto-fit, minmax(320px, 1fr)
+- Cards con hover effects y backdrop blur
 
-### Fase 5: Mobile
-- [ ] Controles táctiles
-- [ ] PWA
-- [ ] Optimización móvil
+### Typing Defense Game (`/typing/`)
+**Estilo:** Game & Watch retro (años 80)
+
+**Colors:**
+- Background: `#e8e8c0` (LCD amarillo)
+- Primary: `#1a1a1a` (negro)
+- Secondary: `#3a3a3a` (gris oscuro)
+- Light: `rgba(26, 26, 26, 0.2)`
+
+**Design principles:**
+- Sin gradientes ni sombras modernas
+- Diseño plano LCD
+- Tipografía: 'Courier New', monospace
+- Filtros grayscale en emojis/iconos
 
 ---
 
 ## 🔧 Development Commands
 
-### Running the Game
+### Running Locally
 
 ```bash
 # Start development server (port 5500)
 npm start
+
 # or
 npm run dev
 
-# Direct browser open (no build step needed)
+# Direct browser open (no build needed)
 open index.html
 ```
 
@@ -351,11 +125,198 @@ npm run validate
 npm run minify
 ```
 
-**Note:** No build step required - vanilla JS runs directly in browser.
+**Note:** No build step required - vanilla JS runs directly.
+
+---
+
+## 🚀 Deployment
+
+### Vercel Configuration
+
+**Project:** games
+**Domain:** games.amoniz.dev
+**Branch:** main (auto-deploy enabled)
+
+**Vercel Settings:**
+- Framework Preset: Other
+- Build Command: *(empty)*
+- Output Directory: `./`
+- Install Command: *(empty)*
+
+**DNS (Cloudflare):**
+- Type: CNAME
+- Name: games
+- Target: cname.vercel-dns.com
+- Proxy: Enabled (orange cloud)
+
+### Deployment Flow
+
+1. Push to `main` → Vercel auto-deploy
+2. Build time: ~30-60 seconds
+3. URL: games.amoniz.dev
+
+---
+
+## 🎯 Typing Defense: Technical Details
+
+### Core Configuration
+
+```javascript
+const config = {
+    turretRadius: 30,
+    baseWordSpeed: 0.3,
+    baseSpawnInterval: 2500,
+    baseMaxLives: 5
+};
+```
+
+### Game State Structure
+
+```javascript
+gameState = {
+    // Core gameplay
+    score, level, xp, xpToNextLevel, lives, maxLives,
+    words: [],          // Word instances
+    particles: [],      // Particle effects
+    projectiles: [],    // Visual projectiles
+
+    // Input & combo
+    currentInput: '',   // What player is typing
+    combo: 0,           // Combo multiplier
+    wordsDestroyed: 0,
+
+    // Upgrades & power-ups
+    upgrades: {},       // { fireRate: 0, slowWords: 0, ... }
+    shieldActive: 0,
+
+    // Statistics (ready for DB)
+    stats: {
+        totalScore, highestLevel, totalWordsDestroyed,
+        totalGamesPlayed, upgradesPicked: []
+    }
+}
+```
+
+### Main Classes
+
+**Word:**
+- Enemy words moving toward turret
+- Properties: `text`, `angle`, `distance`, `speed`, `matched`, `shape`
+- Updates position radially toward center
+- Draws with highlighted matched letters
+
+**Particle:**
+- Visual effects on word destruction
+- Simple physics with velocity decay
+
+**Projectile:**
+- Visual projectiles from turret to destroyed word
+- Travels from center to target position
+
+### Game Loop & Core Mechanics
+
+**Input Handling:**
+- Direct keyboard event listeners (no input field)
+- `currentInput` tracks typed letters
+- Each keypress updates all words' `matched` property
+- Backspace removes last letter, Space resets input
+- Complete matches trigger word destruction
+
+**Word Spawning:**
+- Timer-based with configurable interval
+- Spawn rate affected by "Fire Rate" upgrade
+- Words start at screen edge, move radially toward center
+
+**Collision Detection:**
+- Words check `distance < turretRadius + 25`
+- Reaching center triggers life loss (or shield absorption)
+- Combo resets on damage
+
+**Upgrade System:**
+- 6 upgrade types in `upgradeDefinitions`
+- Each has `effect` function calculating value based on level
+- Upgrades applied on selection
+- Max 3 random options per level-up
+
+**Current Input Display:**
+- Drawn on canvas below turret (not in HUD)
+- Shows only what you're typing (no target word visible)
+- Black background with yellow text when matching
+- Strikethrough when no match
+
+**Level-up Menu:**
+- Shows current upgrades at top with dot indicators
+- Displays all purchased upgrades with their levels
+- Visual dots show progress (filled = purchased level)
+- 3 random upgrade options to choose from
+
+---
+
+## 🎮 Upgrade System
+
+### 6 Types of Upgrades
+
+| Upgrade | Icon | Description | Effect | Max Level |
+|---------|------|-------------|--------|-----------|
+| Fire Rate | ⚡ | More words spawn | -15% spawn interval | 5 |
+| Slow Field | 🐌 | Words move slower | -15% speed | 5 |
+| Extra Life | ❤️ | Increase max HP | +1 life | 5 |
+| Multiplier | 💎 | More points | +30% score | 5 |
+| Shield | 🛡️ | Absorb hits | +1 shield | 3 |
+| Critical | ⭐ | Double points chance | +15% probability | 5 |
+
+### Progression
+
+- **XP per word:** `length * 5`
+- **Points per word:** `(length * 10) * multiplier * (1 + combo * 0.1)`
+- **XP to next level:** `current_level * 1.5` (rounded)
+- **Auto-heal:** +1 life on level up
+
+---
+
+## 🗄️ Future: Database Integration
+
+### Current Stats Structure
+
+```javascript
+stats: {
+    totalScore: 0,
+    highestLevel: 1,
+    totalWordsDestroyed: 0,
+    totalGamesPlayed: 0,
+    upgradesPicked: []
+}
+```
+
+### Planned Features (see DATABASE_SCHEMA.md)
+
+- User system with authentication
+- Global leaderboards
+- Achievement system
+- Permanent upgrades between runs
+- Currency system (gold/gems)
+- Anti-cheat validation
+
+### Recommended Backend
+
+- **API:** REST or GraphQL
+- **Database:** MongoDB (flexible) or PostgreSQL (leaderboards)
+- **Auth:** JWT
+- **Real-time:** WebSockets for leaderboards
+- **Cache:** Redis for statistics
 
 ---
 
 ## 📝 Key Design Decisions
+
+### Landing Page
+
+1. **Match amoniz.dev style** - Consistent brand identity
+2. **Modern gradients** - Blue/purple theme matching portfolio
+3. **Responsive grid** - Auto-fit cards for scalability
+4. **Future-proof** - Easy to add more games
+
+### Typing Defense
 
 1. **No frameworks** - Vanilla JS for simplicity and performance
 2. **Fullscreen responsive** - Immersive gameplay experience
@@ -363,17 +324,134 @@ npm run minify
 4. **XP bar without numbers** - Cleaner visual design
 5. **Integrated tutorial** - Non-intrusive overlay with opacity 0.2
 6. **Direct keyboard capture** - No input field needed
+7. **Canvas-based input display** - Text below turret, not in HUD
 
 ---
 
-## 💡 Code Style
+## 🐛 Problems Solved
 
-- **Vanilla JS** (ES6+) - No transpilation needed
-- Clear section comments in game.js
-- Descriptive variable names
-- No external dependencies
+### Repository Restructure (Feb 2024)
+
+**Challenge:** Initial repo was only for Typing Defense
+**Solution:** Renamed repo to "games" and restructured:
+- Created `/typing/` subdirectory for game
+- Added landing page at root
+- Updated all documentation and deployments
+
+### Input Visualization
+
+**Challenge:** User couldn't see what they were typing
+**Solution:** Added canvas-based text display below turret
+- Renders directly on canvas
+- Subtle integration with game aesthetic
+- Shows only typed letters (no target word spoilers)
+
+### Backspace Bug
+
+**Problem:** Erased matched state from all words
+**Solution:** Only update words matching new input
+
+### Level-up Menu Enhancement
+
+**Problem:** Couldn't see purchased upgrades
+**Solution:** Added "Current Upgrades" section at top
+- Shows all purchased upgrades
+- Visual dot indicators for levels
+- Compact grid layout
 
 ---
 
-**Version:** 1.0.0-beta
-**Last Updated:** 2024-02-09
+## 🎯 Roadmap
+
+### ✅ Completed (v1.0)
+
+- Typing Defense MVP
+- Repository restructure
+- Landing page with amoniz.dev style
+- Deployment to games.amoniz.dev
+- Documentation complete
+
+### Fase 2: Polish
+
+- [ ] Sound effects (retro beeps via Web Audio API)
+- [ ] Better animations
+- [ ] More words (~200-300)
+- [ ] Balance adjustments
+
+### Fase 3: New Games
+
+- [ ] Second game in collection
+- [ ] Shared UI components
+- [ ] Game selection improvements
+
+### Fase 4: Backend
+
+- [ ] User system
+- [ ] Database integration
+- [ ] Leaderboards
+- [ ] Achievements
+
+---
+
+## 💡 Adding New Games
+
+### Steps to Add Game
+
+1. **Create folder:** `mkdir new-game/`
+2. **Add files:** `index.html`, `game.js`, `style.css`
+3. **Update landing:** Add card to `/index.html`
+4. **Match aesthetic:** Follow design system
+5. **Update README:** Document new game
+6. **Commit & push:** Auto-deploy via Vercel
+
+### Landing Page Card Template
+
+```html
+<a href="/new-game/" class="game-card">
+    <div class="game-header">
+        <div class="game-icon">🎯</div>
+        <div class="game-title">Game Title</div>
+    </div>
+    <div class="game-description">
+        Brief description of the game...
+    </div>
+    <div class="game-tech">
+        <span class="tech-tag">Tech 1</span>
+        <span class="tech-tag">Tech 2</span>
+    </div>
+</a>
+```
+
+---
+
+## 📊 Metrics & Balance (Typing Defense)
+
+### Current Difficulty
+
+- **Initial spawn:** 2500ms between words
+- **Initial speed:** 0.3 units/frame
+- **Initial lives:** 5
+- **Turret radius:** 30px
+
+### Balance Testing
+
+- Level 1-3: Easy (learning curve)
+- Level 4-7: Medium (challenging)
+- Level 8+: Hard (requires upgrades)
+
+---
+
+## 🔗 Important Links
+
+- **Live Site:** [games.amoniz.dev](https://games.amoniz.dev)
+- **Main Portfolio:** [amoniz.dev](https://amoniz.dev)
+- **Repository:** [github.com/iPrydz/games](https://github.com/iPrydz/games)
+- **Vercel Dashboard:** [vercel.com/dashboard](https://vercel.com/dashboard)
+- **Cloudflare DNS:** [dash.cloudflare.com](https://dash.cloudflare.com)
+
+---
+
+**Version:** 1.0.0
+**Last Updated:** February 2024
+**Developer:** Alejandro Moñiz Mesa
+**Location:** Barcelona, Spain
