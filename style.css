@@ -26,9 +26,30 @@ body {
 .hud-top {
     display: flex;
     justify-content: space-around;
+    align-items: center;
     padding: 8px 20px;
     background: rgba(26, 26, 26, 0.03);
     border-bottom: 2px solid #1a1a1a;
+    position: relative;
+}
+
+.back-arrow {
+    position: absolute;
+    left: 10px;
+    font-size: 28px;
+    color: #1a1a1a;
+    text-decoration: none;
+    font-weight: bold;
+    line-height: 1;
+    transition: all 0.2s ease;
+    padding: 4px 8px;
+    border: 2px solid transparent;
+}
+
+.back-arrow:hover {
+    background: #1a1a1a;
+    color: #e8e8c0;
+    border: 2px solid #1a1a1a;
 }
 
 .stat-group {
@@ -548,6 +569,12 @@ body {
 @media (max-width: 480px) {
     .hud-top {
         padding: 5px 10px;
+    }
+
+    .back-arrow {
+        font-size: 24px;
+        left: 5px;
+        padding: 2px 6px;
     }
 
     .hud-bottom {

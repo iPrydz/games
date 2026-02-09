@@ -48,6 +48,29 @@ const colors = {
     light: 'rgba(26, 26, 26, 0.2)'
 };
 
+// Tipos de enemigos
+const enemyTypes = {
+    NORMAL: 'normal',
+    SHIELDED: 'shielded',
+    SPLITTER: 'splitter'
+};
+
+// Configuración de tipos de enemigos
+const enemyTypeConfig = {
+    [enemyTypes.NORMAL]: {
+        spawnWeight: 70,  // Probabilidad relativa de spawn
+        shapeOptions: [0, 1, 2]  // Círculo, triángulo, cuadrado
+    },
+    [enemyTypes.SHIELDED]: {
+        spawnWeight: 10,  // Spawn poco frecuente
+        shapeOptions: [0, 1, 2]
+    },
+    [enemyTypes.SPLITTER]: {
+        spawnWeight: 20,
+        shapeOptions: [3, 4]  // Formas especiales: rombo (3), rectángulo (4)
+    }
+};
+
 // Definición de mejoras tipo roguelike
 const upgradeDefinitions = {
     fireRate: {
@@ -170,15 +193,32 @@ Object.keys(upgradeDefinitions).forEach(key => {
 // ============================================================================
 
 class Word {
-    constructor(text) {
+    constructor(text, type = enemyTypes.NORMAL) {
         this.text = text;
+        this.type = type;
         this.angle = Math.random() * Math.PI * 2;
         const maxDist = Math.max(canvas.width, canvas.height);
         this.distance = maxDist / 2 + 100;
         this.speed = upgradeDefinitions.slowWords.effect(gameState.upgrades.slowWords);
         this.updatePosition();
         this.matched = 0;
-        this.shape = Math.floor(Math.random() * 3);
+
+        // Forma según el tipo de enemigo
+        const shapeOptions = enemyTypeConfig[type].shapeOptions;
+        this.shape = shapeOptions[Math.floor(Math.random() * shapeOptions.length)];
+
+        // Propiedades del escudo
+        if (this.type === enemyTypes.SHIELDED) {
+            this.shieldWord = this.generateShieldWord();
+            this.shieldActive = true;
+            this.shieldMatched = 0;
+        }
+    }
+
+    generateShieldWord() {
+        // Generar una palabra corta para el escudo (3-5 letras)
+        const shortWords = wordList.filter(w => w.length >= 3 && w.length <= 5);
+        return shortWords[Math.floor(Math.random() * shortWords.length)];
     }
 
     updatePosition() {
@@ -199,6 +239,35 @@ class Word {
         ctx.save();
         ctx.translate(this.x, this.y);
 
+        // Dibujar escudo si está activo (misma forma que el enemigo)
+        if (this.type === enemyTypes.SHIELDED && this.shieldActive) {
+            ctx.strokeStyle = colors.primary;
+            ctx.lineWidth = 3;
+            ctx.setLineDash([4, 4]);
+
+            if (this.shape === 0) {
+                // Escudo circular
+                ctx.beginPath();
+                ctx.arc(0, 0, size + 8, 0, Math.PI * 2);
+                ctx.stroke();
+            } else if (this.shape === 1) {
+                // Escudo triangular
+                const shieldSize = size + 8;
+                ctx.beginPath();
+                ctx.moveTo(0, -shieldSize);
+                ctx.lineTo(shieldSize, shieldSize);
+                ctx.lineTo(-shieldSize, shieldSize);
+                ctx.closePath();
+                ctx.stroke();
+            } else if (this.shape === 2) {
+                // Escudo cuadrado
+                const shieldSize = size + 8;
+                ctx.strokeRect(-shieldSize, -shieldSize, shieldSize * 2, shieldSize * 2);
+            }
+
+            ctx.setLineDash([]);
+        }
+
         ctx.fillStyle = colors.primary;
         ctx.strokeStyle = colors.primary;
         ctx.lineWidth = 2;
@@ -216,24 +285,69 @@ class Word {
             ctx.lineTo(-size, size);
             ctx.closePath();
             ctx.fill();
-        } else {
+        } else if (this.shape === 2) {
             // Cuadrado
             ctx.fillRect(-size, -size, size * 2, size * 2);
+        } else if (this.shape === 3) {
+            // Rombo (diamante)
+            ctx.beginPath();
+            ctx.moveTo(0, -size * 1.3);      // Top
+            ctx.lineTo(size, 0);             // Right
+            ctx.lineTo(0, size * 1.3);       // Bottom
+            ctx.lineTo(-size, 0);            // Left
+            ctx.closePath();
+            ctx.fill();
+
+            // Línea divisoria para indicar división (si es SPLITTER)
+            if (this.type === enemyTypes.SPLITTER) {
+                ctx.strokeStyle = colors.background;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3, 2]);
+                // Línea horizontal que atraviesa el rombo
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.8, 0);
+                ctx.lineTo(size * 0.8, 0);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        } else if (this.shape === 4) {
+            // Rectángulo horizontal
+            ctx.fillRect(-size * 1.5, -size * 0.7, size * 3, size * 1.4);
+
+            // Línea divisoria para indicar división (si es SPLITTER)
+            if (this.type === enemyTypes.SPLITTER) {
+                ctx.strokeStyle = colors.background;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3, 2]);
+                // Línea vertical que atraviesa el rectángulo
+                ctx.beginPath();
+                ctx.moveTo(0, -size * 0.5);
+                ctx.lineTo(0, size * 0.5);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
         }
 
         ctx.restore();
 
-        // Dibujar texto
+        // Dibujar texto (escudo o palabra principal)
+        const displayText = (this.type === enemyTypes.SHIELDED && this.shieldActive)
+            ? this.shieldWord
+            : this.text;
+        const displayMatched = (this.type === enemyTypes.SHIELDED && this.shieldActive)
+            ? this.shieldMatched
+            : this.matched;
+
         ctx.fillStyle = colors.primary;
         ctx.font = 'bold 14px "Courier New"';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
         const textY = this.y + 30;
-        for (let i = 0; i < this.text.length; i++) {
-            const charX = this.x - (this.text.length * 9) / 2 + i * 9 + 4.5;
+        for (let i = 0; i < displayText.length; i++) {
+            const charX = this.x - (displayText.length * 9) / 2 + i * 9 + 4.5;
 
-            if (i < this.matched) {
+            if (i < displayMatched) {
                 // Letra coincidente - con fondo
                 ctx.fillStyle = colors.primary;
                 ctx.fillRect(charX - 5, textY - 8, 10, 16);
@@ -242,7 +356,7 @@ class Word {
                 ctx.fillStyle = colors.primary;
             }
 
-            ctx.fillText(this.text[i], charX, textY);
+            ctx.fillText(displayText[i], charX, textY);
         }
     }
 
@@ -493,9 +607,77 @@ function drawBackground() {
 // LÓGICA DEL JUEGO
 // ============================================================================
 
-function spawnWord() {
+function spawnWord(forceType = null) {
     const word = wordList[Math.floor(Math.random() * wordList.length)];
-    gameState.words.push(new Word(word));
+
+    // Determinar tipo de enemigo
+    let type = forceType;
+    if (!type) {
+        // Selección aleatoria basada en pesos
+        const rand = Math.random() * 100;
+        let cumulative = 0;
+
+        for (const [enemyType, config] of Object.entries(enemyTypeConfig)) {
+            cumulative += config.spawnWeight;
+            if (rand < cumulative) {
+                type = enemyType;
+                break;
+            }
+        }
+
+        // Fallback por si acaso
+        if (!type) type = enemyTypes.NORMAL;
+    }
+
+    gameState.words.push(new Word(word, type));
+}
+
+function spawnSplitEnemies(x, y, angle, distance, parentShape) {
+    // Determinar forma y cantidad de hijos según el padre
+    let childShape;
+    let childCount;
+
+    if (parentShape === 3) {
+        // Rombo → 2 triángulos
+        childShape = 1;
+        childCount = 2;
+    } else if (parentShape === 4) {
+        // Rectángulo → 2 cuadrados
+        childShape = 2;
+        childCount = 2;
+    } else {
+        // Fallback (no debería ocurrir)
+        childShape = 0;
+        childCount = 2;
+    }
+
+    // Palabras cortas para los hijos (3-5 letras)
+    const shortWords = wordList.filter(w => w.length >= 3 && w.length <= 5);
+
+    // Calcular separación angular para distribuir equitativamente
+    const angleSpread = 0.6; // Radianes de separación total (más amplio)
+
+    for (let i = 0; i < childCount; i++) {
+        const childWord = shortWords[Math.floor(Math.random() * shortWords.length)];
+        const child = new Word(childWord, enemyTypes.NORMAL);
+
+        // Forzar la forma del hijo
+        child.shape = childShape;
+
+        // Distribuir los hijos con separación angular clara
+        // Para 2 hijos: uno a la izquierda (-angleSpread/2), otro a la derecha (+angleSpread/2)
+        const angleOffset = (i - (childCount - 1) / 2) * (angleSpread / (childCount - 1 || 1));
+        child.angle = angle + angleOffset;
+
+        // RETROCEDER: aumentar distancia para que retrocedan al dividirse
+        child.distance = distance + 80; // Retroceden 80 píxeles
+        child.updatePosition();
+
+        // Los hijos se mueven un poco más rápido
+        child.speed = child.speed * 1.2;
+
+        gameState.words.push(child);
+    }
 }
 
 function createExplosion(x, y, intense = false) {
@@ -860,11 +1042,40 @@ document.addEventListener('keydown', (e) => {
 
     if (gameState.isGameOver || gameState.isPaused) return;
 
+    // MODO TEST: Invocar enemigos específicos con teclas numéricas
+    if (key >= '5' && key <= '9') {
+        e.preventDefault();
+        const testKey = parseInt(key);
+
+        switch (testKey) {
+            case 5:
+                // Invocar enemigo normal
+                spawnWord(enemyTypes.NORMAL);
+                break;
+            case 7:
+                // Invocar enemigo que se divide
+                spawnWord(enemyTypes.SPLITTER);
+                break;
+            // Reservado para futuros tipos de enemigos
+            case 6:
+            case 8:
+            case 9:
+                console.log(`Tipo de enemigo ${testKey} aún no implementado`);
+                break;
+        }
+        return;
+    }
+
     // Espacio para resetear palabra actual
     if (key === ' ') {
         e.preventDefault();
         gameState.currentInput = '';
-        gameState.words.forEach(word => word.matched = 0);
+        gameState.words.forEach(word => {
+            word.matched = 0;
+            if (word.type === enemyTypes.SHIELDED) {
+                word.shieldMatched = 0;
+            }
+        });
         updateTypingDisplay();
         return;
     }
@@ -875,10 +1086,21 @@ document.addEventListener('keydown', (e) => {
 
         // Actualizar matched de palabras según el nuevo input
         gameState.words.forEach(word => {
-            if (word.text.startsWith(gameState.currentInput)) {
-                word.matched = gameState.currentInput.length;
+            const targetText = (word.type === enemyTypes.SHIELDED && word.shieldActive)
+                ? word.shieldWord
+                : word.text;
+
+            if (targetText.startsWith(gameState.currentInput)) {
+                if (word.type === enemyTypes.SHIELDED && word.shieldActive) {
+                    word.shieldMatched = gameState.currentInput.length;
+                } else {
+                    word.matched = gameState.currentInput.length;
+                }
             } else {
                 word.matched = 0;
+                if (word.type === enemyTypes.SHIELDED) {
+                    word.shieldMatched = 0;
+                }
             }
         });
 
@@ -892,19 +1114,47 @@ document.addEventListener('keydown', (e) => {
         // Buscar palabra que coincida
         let foundMatch = false;
         for (const word of gameState.words) {
-            if (word.text.startsWith(gameState.currentInput)) {
-                word.matched = gameState.currentInput.length;
+            // Determinar qué palabra estamos escribiendo (escudo o principal)
+            const targetText = (word.type === enemyTypes.SHIELDED && word.shieldActive)
+                ? word.shieldWord
+                : word.text;
+
+            if (targetText.startsWith(gameState.currentInput)) {
+                // Actualizar el matched correspondiente
+                if (word.type === enemyTypes.SHIELDED && word.shieldActive) {
+                    word.shieldMatched = gameState.currentInput.length;
+                } else {
+                    word.matched = gameState.currentInput.length;
+                }
                 foundMatch = true;
 
-                // Palabra completada
-                if (gameState.currentInput === word.text) {
-                    // Calcular puntos
+                // Palabra/Escudo completado
+                if (gameState.currentInput === targetText) {
+                    // Si es un escudo, destruirlo y resetear input
+                    if (word.type === enemyTypes.SHIELDED && word.shieldActive) {
+                        word.shieldActive = false;
+                        word.shieldMatched = 0;
+                        gameState.currentInput = '';
+
+                        // Efecto visual de destrucción de escudo
+                        createExplosion(word.x, word.y, false);
+
+                        updateTypingDisplay();
+                        break;
+                    }
+
+                    // Palabra completada (o enemigo sin escudo destruido)
                     const critChance = upgradeDefinitions.criticalHit.effect(gameState.upgrades.criticalHit);
                     const isCrit = Math.random() < critChance;
                     const basePoints = word.text.length * 10;
                     const multiplier = upgradeDefinitions.scoreMultiplier.effect(gameState.upgrades.scoreMultiplier);
                     const comboBonus = 1 + (gameState.combo * 0.1);
                     let points = Math.floor(basePoints * multiplier * comboBonus);
+
+                    // Bonus por destruir escudo primero
+                    if (word.type === enemyTypes.SHIELDED) {
+                        points = Math.floor(points * 1.5);
+                    }
 
                     if (isCrit) {
                         points *= 2;
@@ -926,6 +1176,18 @@ document.addEventListener('keydown', (e) => {
                     const xpAmount = word.text.length * 5;
                     setTimeout(() => {
                         createExplosion(wordToRemove.x, wordToRemove.y, isCrit);
+
+                        // Si es un SPLITTER, generar enemigos hijos
+                        if (wordToRemove.type === enemyTypes.SPLITTER) {
+                            spawnSplitEnemies(
+                                wordToRemove.x,
+                                wordToRemove.y,
+                                wordToRemove.angle,
+                                wordToRemove.distance,
+                                wordToRemove.shape
+                            );
+                        }
+
                         gameState.words = gameState.words.filter(w => w !== wordToRemove);
 
                         // Dar XP DESPUÉS de que la palabra muera
@@ -940,7 +1202,12 @@ document.addEventListener('keydown', (e) => {
         }
 
         if (!foundMatch) {
-            gameState.words.forEach(word => word.matched = 0);
+            gameState.words.forEach(word => {
+                word.matched = 0;
+                if (word.type === enemyTypes.SHIELDED) {
+                    word.shieldMatched = 0;
+                }
+            });
         }
 
         updateTypingDisplay();
