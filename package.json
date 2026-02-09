@@ -1,0 +1,29 @@
+{
+  "name": "typing-defense",
+  "version": "1.0.0",
+  "description": "Roguelike typing game with Game & Watch retro aesthetic",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx live-server --port=5500 --open=index.html",
+    "dev": "npx live-server --port=5500 --open=index.html",
+    "validate": "npx html-validate index.html",
+    "minify": "npx terser game.js -o game.min.js --compress --mangle"
+  },
+  "keywords": [
+    "game",
+    "typing",
+    "roguelike",
+    "retro",
+    "game-and-watch",
+    "vanilla-js"
+  ],
+  "author": "amoniz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/[usuario]/typing-defense.git"
+  },
+  "homepage": "https://amoniz.dev",
+  "devDependencies": {},
+  "dependencies": {}
+}

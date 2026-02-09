@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Defense - Roguelike</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- HUD Superior -->
+        <div class="hud-top">
+            <div class="stat-group">
+                <div class="stat-label">Nivel</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat-group">
+                <div class="stat-label">Puntos</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-group">
+                <div class="stat-label">Combo</div>
+                <div class="stat-value combo" id="combo">0x</div>
+            </div>
+        </div>
+
+        <!-- Barra de XP -->
+        <div class="xp-bar-container">
+            <div class="xp-bar" id="xpBar"></div>
+        </div>
+
+        <!-- Canvas del juego -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Tutorial overlay -->
+        <div class="tutorial-overlay">
+            <div class="tutorial-line">
+                <span class="tutorial-text">Type to Eliminate</span>
+            </div>
+            <div class="tutorial-line">
+                <span class="tutorial-key">SPACE</span>
+                <span class="tutorial-text">Reset Word</span>
+            </div>
+            <div class="tutorial-line">
+                <span class="tutorial-text">Level Up:</span>
+                <span class="tutorial-key">1</span>
+                <span class="tutorial-key">2</span>
+                <span class="tutorial-key">3</span>
+            </div>
+        </div>
+
+        <!-- HUD Inferior -->
+        <div class="hud-bottom">
+            <div class="lives-container">
+                <div class="lives-label">❤️</div>
+                <div class="lives-bars" id="livesBars"></div>
+            </div>
+            <div class="typing-display" id="typingDisplay"></div>
+            <div class="upgrades-mini" id="upgradesMini"></div>
+        </div>
+
+        <!-- Menú de Mejoras (Level Up) -->
+        <div id="upgradeMenu" class="upgrade-menu hidden">
+            <div class="upgrade-menu-content">
+                <h2>¡NIVEL <span id="levelUpNumber">2</span>!</h2>
+                <p class="upgrade-subtitle">Elige una mejora</p>
+
+                <!-- Mejoras actuales -->
+                <div class="current-upgrades" id="currentUpgrades"></div>
+
+                <div class="upgrade-options" id="upgradeOptions"></div>
+            </div>
+        </div>
+
+        <!-- Game Over -->
+        <div id="gameOver" class="game-over hidden">
+            <div class="game-over-content">
+                <h2>GAME OVER</h2>
+                <div class="final-stats">
+                    <div class="final-stat">
+                        <div class="final-stat-label">Puntuación Final</div>
+                        <div class="final-stat-value" id="finalScore">0</div>
+                    </div>
+                    <div class="final-stat">
+                        <div class="final-stat-label">Nivel Alcanzado</div>
+                        <div class="final-stat-value" id="finalLevel">1</div>
+                    </div>
+                    <div class="final-stat">
+                        <div class="final-stat-label">Palabras Destruidas</div>
+                        <div class="final-stat-value" id="wordsDestroyed">0</div>
+                    </div>
+                </div>
+                <button id="restartBtn" class="restart-btn">REINICIAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
